@@ -106,14 +106,9 @@ distribution.
 #elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__CYGWIN__)
 	#define TIXML_FSEEK fseeko
 	#define TIXML_FTELL ftello
-#elif defined(__ANDROID__) 
-    #if __ANDROID_API__ > 24
-        #define TIXML_FSEEK fseeko64
-        #define TIXML_FTELL ftello64
-    #else
-        #define TIXML_FSEEK fseeko
-        #define TIXML_FTELL ftello
-    #endif
+#elif defined(__ANDROID__) && __ANDROID_API__ > 24
+	#define TIXML_FSEEK fseeko64
+	#define TIXML_FTELL ftello64
 #else
 	#define TIXML_FSEEK fseek
 	#define TIXML_FTELL ftell
@@ -2509,7 +2504,7 @@ void XMLDocument::ClearError() {
 
 void XMLDocument::SetError( XMLError error, int lineNum, const char* format, ... )
 {
-    TIXMLASSERT( error >= 0 && error < XML_ERROR_COUNT );
+    TIXMLASSERT(error >= 0 && error < XML_ERROR_COUNT);
     _errorID = error;
     _errorLineNum = lineNum;
 	_errorStr.Reset();
@@ -2518,7 +2513,8 @@ void XMLDocument::SetError( XMLError error, int lineNum, const char* format, ...
     char* buffer = new char[BUFFER_SIZE];
 
     TIXMLASSERT(sizeof(error) <= sizeof(int));
-    TIXML_SNPRINTF(buffer, BUFFER_SIZE, "Error=%s ErrorID=%d (0x%x) Line number=%d", ErrorIDToName(error), int(error), int(error), lineNum);
+    TIXML_SNPRINTF(buffer, BUFFER_SIZE, "Error=%s ErrorID=%d (0x%x) Line number=%d",
+        ErrorIDToName(error), static_cast<int>(error), static_cast<unsigned int>(error), lineNum);
 
 	if (format) {
 		size_t len = strlen(buffer);
